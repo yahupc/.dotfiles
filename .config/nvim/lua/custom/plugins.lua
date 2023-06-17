@@ -78,8 +78,15 @@ local plugins = {
     config = function()
       require "custom.completition"
     end,
+  },
+
+  {
+    "kevinhwang91/nvim-ufo",
+    dependencies = {
+      "kevinhwang91/promise-async",
+    }
   }
- -- To make a plugin not be loaded
+  -- To make a plugin not be loaded
   -- {
   --   "NvChad/nvim-colorizer.lua",
   --   enabled = false
