@@ -53,8 +53,9 @@ local plugins = {
       "kristijanhusak/vim-dadbod-completion",
       "tpope/vim-dotenv",
     },
+    event = "VeryLazy",
     config = function()
-      require ("custom.configs.database")
+      require "custom.configs.database"
     end,
     keys = { { "<leader><leader>db", ":tab DBUI<cr>", desc = "Open Database client" } },
   },
@@ -79,12 +80,15 @@ local plugins = {
       require "custom.completition"
     end,
   },
-
+  -- Folding
   {
     "kevinhwang91/nvim-ufo",
     dependencies = {
       "kevinhwang91/promise-async",
-    }
+    },
+    config = function()
+      require "custom.configs.ufo"
+    end,
   }
   -- To make a plugin not be loaded
   -- {
