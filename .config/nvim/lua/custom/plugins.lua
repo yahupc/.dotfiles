@@ -80,16 +80,51 @@ local plugins = {
       require "custom.completition"
     end,
   },
+  -- {
+  --   "anuvyklack/pretty-fold.nvim",
+  --   event = "VeryLazy",
+  --   config = function()
+  --     require ("custom.pretty-fold").setup()
+  --   end
+  -- }
+  --
+
+
   -- Folding
   {
     "kevinhwang91/nvim-ufo",
     dependencies = {
       "kevinhwang91/promise-async",
     },
+    event = "VeryLazy",
     config = function()
-      require "custom.configs.ufo"
+      require "custom.ufo"
     end,
-  }
+  },
+  --   -- packer
+  -- {
+  --   "kevinhwang91/nvim-ufo",
+  --   requires = {
+  --     "kevinhwang91/promise-async",
+  --     {
+  --       "luukvbaal/statuscol.nvim",
+  --       config = function()
+  --         local builtin = require("statuscol.builtin")
+  --         require("statuscol").setup(
+  --           {
+  --             relculright = true,
+  --             segments = {
+  --               {text = {builtin.foldfunc}, click = "v:lua.ScFa"},
+  --               {text = {"%s"}, click = "v:lua.ScSa"},
+  --               {text = {builtin.lnumfunc, " "}, click = "v:lua.ScLa"}
+  --             }
+  --           }
+  --         )
+  --       end
+  --     }
+  --   }
+  -- }
+  --
   -- To make a plugin not be loaded
   -- {
   --   "NvChad/nvim-colorizer.lua",
