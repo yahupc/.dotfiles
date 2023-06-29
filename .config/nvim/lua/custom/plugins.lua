@@ -1,4 +1,4 @@
-local overrides = require("custom.configs.overrides")
+local overrides = require "custom.configs.overrides"
 ---@type NvPluginSpec[]
 local plugins = {
 
@@ -23,7 +23,7 @@ local plugins = {
   -- override plugin configs
   {
     "williamboman/mason.nvim",
-    opts = overrides.mason
+    opts = overrides.mason,
   },
 
   {
@@ -89,7 +89,6 @@ local plugins = {
   -- }
   --
 
-
   -- Folding
   {
     "kevinhwang91/nvim-ufo",
@@ -99,6 +98,13 @@ local plugins = {
     event = "VeryLazy",
     config = function()
       require "custom.ufo"
+    end,
+  },
+  {
+    "luukvbaal/statuscol.nvim",
+    event = "VeryLazy",
+    config = function()
+      require "custom.statuscol"
     end,
   },
   --   -- packer
