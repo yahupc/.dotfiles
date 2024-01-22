@@ -14,6 +14,7 @@ return {
 				"css-lsp",
 				"html-lsp",
 				"phpactor",
+				"java-test",
 			})
 		end,
 	},
@@ -26,6 +27,7 @@ return {
 			---@type lspconfig.options
 			servers = {
 				cssls = {},
+				jdtls = {},
 				tailwindcss = {
 					root_dir = function(...)
 						return require("lspconfig.util").root_pattern(".git")(...)
@@ -135,7 +137,11 @@ return {
 					},
 				},
 			},
-			setup = {},
+			setup = {
+				jdtls = function()
+					return true -- avoid duplicate servers
+				end,
+			},
 		},
 	},
 }
