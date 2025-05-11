@@ -1,166 +1,268 @@
+local mode = {
+  "mode",
+  fmt = function(s)
+    local mode_map = {
+      ["NORMAL"] = "N",
+      ["O-PENDING"] = "N?",
+      ["INSERT"] = "I",
+      ["VISUAL"] = "V",
+      ["V-BLOCK"] = "VB",
+      ["V-LINE"] = "VL",
+      ["V-REPLACE"] = "VR",
+      ["REPLACE"] = "R",
+      ["COMMAND"] = "!",
+      ["SHELL"] = "SH",
+      ["TERMINAL"] = "T",
+      ["EX"] = "X",
+      ["S-BLOCK"] = "SB",
+      ["S-LINE"] = "SL",
+      ["SELECT"] = "S",
+      ["CONFIRM"] = "Y?",
+      ["MORE"] = "M",
+    }
+    return mode_map[s] or s
+  end,
+}
+
+local function codecompanion_adapter_name()
+  local chat = require("codecompanion").buf_get_chat(vim.api.nvim_get_current_buf())
+  if not chat then
+    return nil
+  end
+
+  return " " .. chat.adapter.formatted_name
+end
+
+local function codecompanion_current_model_name()
+  local chat = require("codecompanion").buf_get_chat(vim.api.nvim_get_current_buf())
+  if not chat then
+    return nil
+  end
+
+  return chat.settings.model
+end
+-- This file contains the configuration for various UI-related plugins in Neovim.
 return {
-	-- messages, cmdline and the popupmenu
-	{
-		"folke/noice.nvim",
-		opts = function(_, opts)
-			table.insert(opts.routes, {
-				filter = {
-					event = "notify",
-					find = "No information available",
-				},
-				opts = { skip = true },
-			})
-			local focused = true
-			vim.api.nvim_create_autocmd("FocusGained", {
-				callback = function()
-					focused = true
-				end,
-			})
-			vim.api.nvim_create_autocmd("FocusLost", {
-				callback = function()
-					focused = false
-				end,
-			})
-			table.insert(opts.routes, 1, {
-				filter = {
-					cond = function()
-						return not focused
-					end,
-				},
-				view = "notify_send",
-				opts = { stop = false },
-			})
+  -- Plugin: folke/todo-comments.nvim
+  -- URL: https://github.com/folke/todo-comments.nvim
+  -- Description: Plugin to highlight and search for TODO, FIX, HACK, etc. comments in your code.
+  -- IMPORTANT: using version "*" to fix a bug
+  { "folke/todo-comments.nvim", version = "*" },
 
-			opts.commands = {
-				all = {
-					-- options for the message history that you get with `:Noice`
-					view = "split",
-					opts = { enter = true, format = "details" },
-					filter = {},
-				},
-			}
+  -- Plugin: folke/which-key.nvim
+  -- URL: https://github.com/folke/which-key.nvim
+  -- Description: Plugin to show a popup with available keybindings.
+  -- IMPORTANT: using event "VeryLazy" to optimize loading time
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      preset = "classic",
+      win = { border = "single" },
+    },
+  },
 
-			vim.api.nvim_create_autocmd("FileType", {
-				pattern = "markdown",
-				callback = function(event)
-					vim.schedule(function()
-						require("noice.text.markdown").keys(event.buf)
-					end)
-				end,
-			})
+  -- Plugin: nvim-docs-view
+  -- URL: https://github.com/amrbashir/nvim-docs-view
+  -- Description: A Neovim plugin for viewing documentation.
+  {
+    "amrbashir/nvim-docs-view",
+    lazy = true, -- Load this plugin lazily
+    cmd = "DocsViewToggle", -- Command to toggle the documentation view
+    opts = {
+      position = "right", -- Position the documentation view on the right
+      width = 60, -- Set the width of the documentation view
+    },
+  },
 
-			opts.presets.lsp_doc_border = true
-		end,
-	},
+  -- Plugin: lualine.nvim
+  -- URL: https://github.com/nvim-lualine/lualine.nvim
+  -- Description: A blazing fast and easy to configure Neovim statusline plugin.
+  {
+    "nvim-lualine/lualine.nvim",
+    event = "VeryLazy", -- Load this plugin on the 'VeryLazy' event
+    requires = { "nvim-tree/nvim-web-devicons", opt = true }, -- Optional dependency for icons
+    opts = {
+      options = {
+        theme = "catppuccin", -- Set the theme for lualine
+        icons_enabled = true, -- Enable icons in the statusline
+      },
+      sections = {
+        lualine_a = {
+          {
+            "mode", -- Display the current mode
+            icon = "󱗞", -- Set the icon for the mode
+          },
+        },
+      },
+      extensions = {
+        "quickfix",
+        {
+          filetypes = { "oil" },
+          sections = {
+            lualine_a = {
+              mode,
+            },
+            lualine_b = {
+              function()
+                local ok, oil = pcall(require, "oil")
+                if not ok then
+                  return ""
+                end
 
-	{
-		"rcarriga/nvim-notify",
-		opts = {
-			timeout = 5000,
-		},
-	},
+                ---@diagnostic disable-next-line: param-type-mismatch
+                local path = vim.fn.fnamemodify(oil.get_current_dir(), ":~")
+                return path .. " %m"
+              end,
+            },
+          },
+        },
+        {
+          filetypes = { "codecompanion" },
+          sections = {
+            lualine_a = {
+              mode,
+            },
+            lualine_b = {
+              codecompanion_adapter_name,
+            },
+            lualine_c = {
+              codecompanion_current_model_name,
+            },
+            lualine_x = {},
+            lualine_y = {
+              "progress",
+            },
+            lualine_z = {
+              "location",
+            },
+          },
+          inactive_sections = {
+            lualine_a = {},
+            lualine_b = {
+              codecompanion_adapter_name,
+            },
+            lualine_c = {},
+            lualine_x = {},
+            lualine_y = {
+              "progress",
+            },
+            lualine_z = {},
+          },
+        },
+      },
+    },
+  },
 
-	-- animations
-	{
-		"echasnovski/mini.animate",
-		event = "VeryLazy",
-		opts = function(_, opts)
-			opts.scroll = {
-				enable = false,
-			}
-		end,
-	},
+  -- Plugin: incline.nvim
+  -- URL: https://github.com/b0o/incline.nvim
+  -- Description: A Neovim plugin for showing the current filename in a floating window.
+  {
+    "b0o/incline.nvim",
+    event = "BufReadPre", -- Load this plugin before reading a buffer
+    priority = 1200, -- Set the priority for loading this plugin
+    config = function()
+      require("incline").setup({
+        window = { margin = { vertical = 0, horizontal = 1 } }, -- Set the window margin
+        hide = {
+          cursorline = true, -- Hide the incline window when the cursorline is active
+        },
+        render = function(props)
+          local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t") -- Get the filename
+          if vim.bo[props.buf].modified then
+            filename = "[+] " .. filename -- Indicate if the file is modified
+          end
 
-	-- buffer line
-	{
-		"akinsho/bufferline.nvim",
-		event = "VeryLazy",
-		keys = {
-			{ "<Tab>", "<Cmd>BufferLineCycleNext<CR>", desc = "Next tab" },
-			{ "<S-Tab>", "<Cmd>BufferLineCyclePrev<CR>", desc = "Prev tab" },
-		},
-		opts = {
-			options = {
-				mode = "tabs",
-				-- separator_style = "slant",
-				show_buffer_close_icons = false,
-				show_close_icon = false,
-			},
-		},
-	},
+          local icon, color = require("nvim-web-devicons").get_icon_color(filename) -- Get the icon and color for the file
+          return { { icon, guifg = color }, { " " }, { filename } } -- Return the rendered content
+        end,
+      })
+    end,
+  },
 
-	-- statusline
-	{
-		"nvim-lualine/lualine.nvim",
-		event = "VeryLazy",
-		opts = {
-			options = {
-				-- globalstatus = false,
-				theme = "solarized_dark",
-			},
-		},
-	},
+  -- Plugin: zen-mode.nvim
+  -- URL: https://github.com/folke/zen-mode.nvim
+  -- Description: A Neovim plugin for distraction-free coding.
+  {
+    "folke/zen-mode.nvim",
+    cmd = "ZenMode", -- Command to toggle Zen Mode
+    opts = {
+      plugins = {
+        gitsigns = true, -- Enable gitsigns integration
+        tmux = true, -- Enable tmux integration
+        kitty = { enabled = false, font = "+2" }, -- Disable kitty integration and set font size
+        twilight = { enabled = true }, -- Enable twilight integration
+      },
+    },
+    keys = { { "<leader>z", "<cmd>ZenMode<cr>", desc = "Zen Mode" } }, -- Keybinding to toggle Zen Mode
+  },
 
-	-- filename
-	{
-		"b0o/incline.nvim",
-		dependencies = { "craftzdog/solarized-osaka.nvim" },
-		event = "BufReadPre",
-		priority = 1200,
-		config = function()
-			local colors = require("solarized-osaka.colors").setup()
-			require("incline").setup({
-				highlight = {
-					groups = {
-						InclineNormal = { guibg = colors.magenta500, guifg = colors.base04 },
-						InclineNormalNC = { guifg = colors.violet500, guibg = colors.base03 },
-					},
-				},
-				window = { margin = { vertical = 0, horizontal = 1 } },
-				hide = {
-					cursorline = true,
-				},
-				render = function(props)
-					local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
-					if vim.bo[props.buf].modified then
-						filename = "[+] " .. filename
-					end
-
-					local icon, color = require("nvim-web-devicons").get_icon_color(filename)
-					return { { icon, guifg = color }, { " " }, { filename } }
-				end,
-			})
-		end,
-	},
-
-	{
-		"folke/zen-mode.nvim",
-		cmd = "ZenMode",
-		opts = {
-			plugins = {
-				gitsigns = true,
-				tmux = true,
-				kitty = { enabled = false, font = "+2" },
-			},
-		},
-		keys = { { "<leader>z", "<cmd>ZenMode<cr>", desc = "Zen Mode" } },
-	},
-
-	{
-		"nvimdev/dashboard-nvim",
-		event = "VimEnter",
-		opts = function(_, opts)
-			local logo = [[
-██╗   ██╗ █████╗ ██╗  ██╗██╗   ██╗██████╗  ██████╗
-╚██╗ ██╔╝██╔══██╗██║  ██║██║   ██║██╔══██╗██╔════╝
- ╚████╔╝ ███████║███████║██║   ██║██████╔╝██║     
-  ╚██╔╝  ██╔══██║██╔══██║██║   ██║██╔═══╝ ██║     
-   ██║   ██║  ██║██║  ██║╚██████╔╝██║     ╚██████╗
-   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝      ╚═════╝
-]]
-
-			logo = string.rep("\n", 8) .. logo .. "\n\n"
-			opts.config.header = vim.split(logo, "\n")
-		end,
-	},
+  -- Plugin: snacks.nvim
+  -- URL: https://github.com/folke/snacks.nvim/tree/main
+  -- Description: A Neovim plugin for creating a customizable dashboard.
+  {
+    "folke/snacks.nvim",
+    opts = {
+      notifier = {},
+      image = {},
+      picker = {
+        matcher = {
+          fuzzy = true,
+          smartcase = true,
+          ignorecase = true,
+          filename_bonus = true,
+        },
+        sources = {
+          explorer = {
+            matcher = {
+              fuzzy = true, -- Enables fuzzy matching, so you can be a bit imprecise with your search terms
+              smartcase = true, -- If your search term has uppercase letters, the search becomes case-sensitive
+              ignorecase = true, -- Ignores case when searching, unless smartcase is triggered
+              filename_bonus = true, -- Gives a higher priority to matches in filenames
+              sort_empty = false, -- If no matches are found, it won't sort the results
+            },
+          },
+        },
+      },
+      dashboard = {
+        sections = {
+          { section = "header" },
+          { icon = " ", title = "Keymaps", section = "keys", indent = 2, padding = 1 },
+          { icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
+          { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
+          { section = "startup" },
+        },
+        preset = {
+          header = [[
+                    ░░░░░░      ░░░░░░                        
+                  ░░░░░░░░░░  ░░░░░░░░░░                      
+                ░░░░░░░░░░░░░░░░░░░░░░░░░░                    
+              ░░░░░░░░░░▒▒▒▒░░▒▒▒▒░░░░░░░░░░                  
+  ░░░░      ░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░        ░░░░    
+▒▒░░      ░░░░░░▒▒▒▒▒▒▒▒▒▒██▒▒██▒▒▒▒▒▒▒▒▒▒░░░░░░        ▒▒░░  
+▒▒░░    ░░░░░░░░▒▒▒▒▒▒▒▒▒▒████▒▒████▒▒▒▒▒▒▒▒▒▒░░░░░░░░  ▒▒░░▒ 
+▒▒▒▒░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒▒██████▒▒██████▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░▒▒▒ 
+██▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒▒▒██████▓▓██▒▒██████▒▒▓▓██▒▒▒▒▒▒▒▒▒▒▒▒▒▒█ 
+████▒▒▒▒▒▒████▒▒▒▒██████████  ██████████▒▒▒▒████▒▒▒▒▒▒▒▒██    
+  ████████████████████████      ████████████████████████      
+    ██████████████████              ██████████████████        
+        ██████████                      ██████████            
+]],
+          -- stylua: ignore
+          ---@type snacks.dashboard.Item[]
+          keys = {
+            { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+            { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+            { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
+            { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+            { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
+            { icon = " ", key = "s", desc = "Restore Session", section = "session" },
+            { icon = " ", key = "x", desc = "Lazy Extras", action = ":LazyExtras" },
+            { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+            { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+          },
+        },
+      },
+    },
+  },
 }
