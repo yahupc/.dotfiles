@@ -15,9 +15,6 @@ return {
       -- Description: A UI for nvim-dap.
       "rcarriga/nvim-dap-ui",
 
-      --python
-      "mfussenegger/nvim-dap-python",
-
       -- Plugin: nvim-dap-virtual-text
       -- URL: https://github.com/theHamsta/nvim-dap-virtual-text
       -- Description: Virtual text for the debugger.
@@ -148,13 +145,6 @@ return {
           require("dap.ui.widgets").hover()
         end,
         desc = "Widgets",
-      },
-      {
-        "<leader>dz",
-        function()
-          require("dap-python").test_method()
-        end,
-        desc = "Python",
       },
     },
 

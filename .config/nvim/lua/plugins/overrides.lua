@@ -38,6 +38,9 @@ return {
             return require("lspconfig.util").root_pattern("angular.json", "project.json")(fname)
           end,
         },
+        pyright = {},
+        phpactor = {},
+        ruff = {},
         nil_ls = {
           -- Configuration for nil (Nix Language Server), already installed via nix
           cmd = { "nil" },
